@@ -45,7 +45,7 @@ contract('StoreKey', (accounts) => {
         console.log("任何人都可以读取 account2")
         console.log(result)
 
-        const encrypBuf = "908532463f98e2294630c6109fb838ca0409c28b7219ff54c3a525d3a29fcb4aa79cbd3e1af28705d2298e98712c4fbb9179909f2dad2711f518abe96eaf53cfbf80cf11efbb72fc13bb3a4d0b3222b4f6df24a118f20c8683d37bb424e265679fd9f0a6b1a2fcb5ee6a42954ee1968e7e5f0c21b375c183f2b90a569551d45807daf8b856bc2f1b614ad7a83504be8ac07dcd5c4802def9ca65096496d1c5b258";
+        const encrypBuf = "d056b155000137a3dd224ec93a654fac045b264baa412df8a43c5b3664f970a331707fe1202543c90c494d388abd4632c8358d4777354ccfa4ec33f9bf5944d1b10f97cbd77517c07b77b669ded5bbc19636f367caf1f3505f73e711a2f5cf468699f624d8dc8d21078776e7e1bedb4d1026166fde72097c11a660b0e583b4bd7c335fecc49ba5bcc822f280f6746915c7312ba77098893be85da50895012176cc";
 
 
         result = await storeKeyInstance.setEncrypt(account1, Buffer.from(encrypBuf, 'hex'), { from: account0 })
