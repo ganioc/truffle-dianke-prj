@@ -59,9 +59,50 @@ contract('StoreKey', (accounts) => {
         const pubkey1 = "04d709c4fb8695d079625dc28f019fb615b752dbbfc7fc37ddaa0e2186ed100a88ffb9db5d2e0b4136350b984a83620dbeed13c488116bf4a1ced600d4b1199184"
 
         let result = await storeKeyInstance.setPubkey(Buffer.from(pubkey1, 'hex'), { from: accounts[1] });
-        console.log(result)
-        console.log(result.logs[0].args)
+        // console.log(result)
+        // console.log(result.logs[0].args)
         assert.equal(result.logs[0].args.pubkey, '0x' + pubkey1, 'pubkey delivered successfully')
+
+        result = await storeKeyInstance.pubkeys(accounts[1]);
+        // console.log(result);
+        assert.equal(result.pubkey, '0x' + pubkey1, 'readfrom pubkeys')
+
+    })
+    it('should test addAdmin', async () => {
+        const storeKeyInstance = await StoreKey.deployed();
+        let result = await storeKeyInstance.addAdmin(accounts[2], { from: accounts[0] });
+        // console.log(result)
+        result = await storeKeyInstance.isAdmin(accounts[2])
+        console.log(result)
+        assert.equal(result, true, 'accounts[2] should be in admins[]')
+    })
+    it('should test updateRequest', async () => {
+        const storeKeyInstance = await StoreKey.deployed();
+        let result = await storeKeyInstance.setRequest("0x12345678910", { from: accounts[1] });
+        console.log(result)
+        result = await storeKeyInstance.getRequest("0x12345678910", { from: accounts[1] })
+        console.log(result);
+        result = await storeKeyInstance.updateRequest(accounts[1], "0x12345678910", Buffer.from("456789", 'hex'), Buffer.from("0123", 'hex'), { from: accounts[0] })
+        console.log(result);
+        console.log(result.logs[0].args)
+
+    })
+    it('should getRequest', async () => {
+        const storeKeyInstance = await StoreKey.deployed();
+        let result = await storeKeyInstance.getRequest("0x12345678910", { from: accounts[1] })
+        console.log(result);
+    })
+    it('should refuseRequest', async () => {
+        const storeKeyInstance = await StoreKey.deployed();
+        let result = await storeKeyInstance.refuseRequest(accounts[1], "0x12345678910", 101, { from: accounts[0] })
+        console.log(result);
+        result = await storeKeyInstance.getRequest("0x12345678910", { from: accounts[1] })
+        console.log(result);
+    })
+    it('should queryRequest', async () => {
+        const storeKeyInstance = await StoreKey.deployed();
+        let result = await storeKeyInstance.queryRequest(accounts[1], "0x12345678910");
+        console.log(result);
 
     })
 })

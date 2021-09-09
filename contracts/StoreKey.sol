@@ -156,6 +156,7 @@ contract StoreKey {
 
     function setRequest(bytes memory hashId) public returns (uint256) {
         require(pubkeys[msg.sender].exists == true, "No pubkey set");
+        require(hashId.length < 256, "hashId length over limit");
 
         address addrHash = bytes2Address(hashId);
 
@@ -172,6 +173,7 @@ contract StoreKey {
     }
 
     function updateRequest(
+        address addr,
         bytes memory hashId,
         bytes memory newHashId,
         bytes memory encryptedSecret
@@ -183,17 +185,14 @@ contract StoreKey {
             "No admin rights"
         );
 
-        require(
-            requests[msg.sender][addrHash].exists == true,
-            "Request unavailable"
-        );
+        require(requests[addr][addrHash].exists == true, "Request unavailable");
 
-        requests[msg.sender][addrHash].hashId = bytes(hashId);
-        requests[msg.sender][addrHash].newHashId = bytes(newHashId);
-        requests[msg.sender][addrHash].encryptedSecret = bytes(encryptedSecret);
-        requests[msg.sender][addrHash].status = 0;
+        requests[addr][addrHash].hashId = bytes(hashId);
+        requests[addr][addrHash].newHashId = bytes(newHashId);
+        requests[addr][addrHash].encryptedSecret = bytes(encryptedSecret);
+        requests[addr][addrHash].status = 0;
         emit EventUpdateRequest(
-            msg.sender,
+            addr,
             addrHash,
             hashId,
             newHashId,
@@ -202,10 +201,11 @@ contract StoreKey {
         return 0;
     }
 
-    function refuseRequest(bytes memory hashId, uint256 status)
-        public
-        returns (uint256)
-    {
+    function refuseRequest(
+        address addr,
+        bytes memory hashId,
+        uint256 status
+    ) public returns (uint256) {
         address addrHash = bytes2Address(hashId);
 
         require(
@@ -213,13 +213,12 @@ contract StoreKey {
             "No admin rights"
         );
 
-        require(
-            requests[msg.sender][addrHash].exists == true,
-            "Request unavailable"
-        );
+        require(requests[addr][addrHash].exists == true, "Request unavailable");
 
-        requests[msg.sender][addrHash].status = status;
-        emit EventRefuseRequest(msg.sender, addrHash, hashId, status);
+        requests[addr][addrHash].status = status;
+        requests[addr][addrHash].newHashId = new bytes(0);
+        requests[addr][addrHash].encryptedSecret = new bytes(0);
+        emit EventRefuseRequest(addr, addrHash, hashId, status);
         return 0;
     }
 
