@@ -10,10 +10,32 @@ contract('StoreKey', (accounts) => {
         const storeKeyInstance = await StoreKey.deployed();
 
         const index = await storeKeyInstance.getIndex();
-        console.log(index.valueOf())
+        // console.log(index.valueOf())
         console.log(index.toNumber())
 
         assert.equal(index, 0, 'index is 0 in the initial state')
+    })
+    it('Should test whitelist manipulation', async () => {
+        const storeKeyInstance = await StoreKey.deployed();
+        let admin = accounts[0];
+        let account1 = accounts[1];
+
+        let result = await storeKeyInstance.addWhiteList(account1, { from: admin });
+        console.log(result);
+
+        result = await storeKeyInstance.whitelist(account1, { from: admin });
+        console.log(result)
+        assert.equal(result, true, "account1 should be in whitelist")
+    })
+    it('Should test whitelist again', async (accounts) => {
+        const storeKeyInstance = await StoreKey.deployed();
+        let admin = accounts[0];
+        let account1 = accounts[1];
+        let account2 = accounts[2];
+
+        result = await storeKeyInstance.whitelist(account2, { from: admin });
+        console.log(result)
+        assert.equal(result, false, "account2 should not be in whitelist")
     })
     it('Should test owner', async () => {
         const storeKeyInstance = await StoreKey.deployed();
@@ -31,6 +53,7 @@ contract('StoreKey', (accounts) => {
         // public key
         const pubkey0 = "04f34aee637b220f5a29dcb3084a252d24d65e7e88a7e7fa8548fed734b9d826732e4713eba1cf2709c69026a424e24df115e3c7e73af6c02cca7659a6d74caf41";
         const pubkey1 = "04d64ae2633d289e78b43d0475d7e2942f5a1572d9800ea7b7e584c8781413f6165a8fd7eb2c234cadbfd96691d017eef926b5e6bae908abd708adb67918bcb13d"
+        const pubkey2 = "043d527ad7ab840562b36bb9015fb19f5ce545db075eb3cbe4ee116155346920240c417e9d4403e340d58e4f95a6707afe60c218dfe2d5ff3c0b90086323a8d0e7"
 
 
         let result = await storeKeyInstance.ownerSetPubkey(account1, Buffer.from(pubkey1, 'hex'));

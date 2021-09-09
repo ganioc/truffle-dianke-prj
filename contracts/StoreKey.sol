@@ -24,6 +24,20 @@ contract StoreKey {
     }
 
     event EventSetRequest(address addr, address id, bytes hashId);
+    event EventRefuseRequest(
+        address addr,
+        address id,
+        bytes hashId,
+        uint256 status
+    );
+    event EventUpdateRequest(
+        address addr,
+        address id,
+        bytes hashId,
+        bytes newHashId,
+        bytes secret
+    );
+    event EventSetPubkey(address addr, bytes pubkey);
 
     // address[] private whitelist;
     mapping(address => bool) public whitelist;
@@ -45,6 +59,20 @@ contract StoreKey {
 
     function getIndex() public view returns (uint256) {
         return index;
+    }
+
+    function addWhiteList(address addr) public returns (uint256) {
+        require(msg.sender == owner || admins[addr] == true);
+        whitelist[addr] = true;
+        return 0;
+    }
+
+    function removeWhiteList(address addr) public returns (uint256) {
+        require(msg.sender == owner || admins[addr] == true);
+        require(whitelist[addr] == true, "Not exist.");
+        delete whitelist[addr];
+        delete pubkeys[addr];
+        return 0;
     }
 
     function ownerSetPubkey(address addr, bytes memory pubkey)
@@ -72,28 +100,23 @@ contract StoreKey {
     function setPubkey(bytes memory pubkey) public returns (uint256) {
         require(pubkey.length == 65);
         // How to check pubkey valid?
-        require(msg.sender == pubkey2Address(pubkey));
-        require(whitelist[msg.sender] == true, "Not in whitelist.");
 
-        // if (pubkeys[msg.sender].length == 0) {
-        //     index++;
-        // }
-        // pubkeys[msg.sender] = bytes(pubkey);
+        require(msg.sender == pubkey2Address(pubkey), "Invalid pubkey value");
+        require(whitelist[msg.sender] == true, "Not in whitelist");
+
         PubkeyItem memory item = pubkeys[msg.sender];
 
         if (item.exists != true) {
             index++;
         }
+        // return msg.sender;
         pubkeys[msg.sender] = PubkeyItem(bytes(pubkey), true);
+        emit EventSetPubkey(msg.sender, pubkey);
 
         return 0;
     }
 
-    function pubkey2Address(bytes memory pubkey)
-        internal
-        pure
-        returns (address)
-    {
+    function pubkey2Address(bytes memory pubkey) public pure returns (address) {
         require(pubkey.length == 65);
         bytes memory buf = new bytes(64);
 
@@ -129,20 +152,6 @@ contract StoreKey {
 
     function isAdmin(address addr) public view returns (bool) {
         return admins[addr];
-    }
-
-    function addWhiteList(address addr) public returns (uint256) {
-        require(msg.sender == owner || admins[addr] == true);
-        whitelist[addr] = true;
-        return 0;
-    }
-
-    function removeWhiteList(address addr) public returns (uint256) {
-        require(msg.sender == owner || admins[addr] == true);
-        require(whitelist[addr] == true, "Not exist.");
-        delete whitelist[addr];
-        delete pubkeys[addr];
-        return 0;
     }
 
     function setRequest(bytes memory hashId) public returns (uint256) {
@@ -183,6 +192,13 @@ contract StoreKey {
         requests[msg.sender][addrHash].newHashId = bytes(newHashId);
         requests[msg.sender][addrHash].encryptedSecret = bytes(encryptedSecret);
         requests[msg.sender][addrHash].status = 0;
+        emit EventUpdateRequest(
+            msg.sender,
+            addrHash,
+            hashId,
+            newHashId,
+            encryptedSecret
+        );
         return 0;
     }
 
@@ -203,6 +219,7 @@ contract StoreKey {
         );
 
         requests[msg.sender][addrHash].status = status;
+        emit EventRefuseRequest(msg.sender, addrHash, hashId, status);
         return 0;
     }
 
